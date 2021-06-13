@@ -17,7 +17,7 @@ function UploadToExpress() {
       // do the validation here
       formData.append('avatars', e.target.files[i]);
     }
-    const res = await axios.post('/api/s3/multi', formData, {
+    const res = await axios.post('/api/expressS3/multi', formData, {
       headers: { 'content-type': 'multipart/form-data' },
     });
     console.log(res);
@@ -25,7 +25,8 @@ function UploadToExpress() {
   return (
     <div className="App">
       <p>
-        upload <strong>multiple</strong> image to <strong>s3</strong>
+        upload <strong>multiple</strong> image to <strong>express</strong> then{' '}
+        <strong>s3</strong>
       </p>
       <input
         type="file"

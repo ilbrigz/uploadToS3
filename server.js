@@ -45,26 +45,8 @@ app.get('/api/images/:key', async (req, res, next) => {
 });
 
 app.post('/api/express', upload.single('avatar'), function (req, res, next) {
-  //   console.log(req.file);
+  console.log({ ...req.body }); // text can be accessed here
   return res.json({ mgs: 'hello' });
-  // req.file is the `avatar` file
-  // req.body will hold the text fields, if there were any
-});
-
-app.post('/api/express/multi', fileUpload(), async function (req, res, next) {
-  try {
-    const result = await Promise.all(
-      req.files.avatars.map((file) =>
-        uploadFileBuffer(
-          Buffer.from(file.data, 'binary'),
-          file.name.split('.')[0] + Date.now()
-        )
-      )
-    );
-    return res.send(result);
-  } catch (error) {
-    next(error);
-  }
 });
 
 app.post('/api/s3', upload.single('avatar'), async function (req, res, next) {
@@ -76,9 +58,6 @@ app.post('/api/s3', upload.single('avatar'), async function (req, res, next) {
     console.log(error);
     next(error);
   }
-  //   return res.send({ imagePath: `/images/${result.Key}` });
-  // req.file is the `avatar` file
-  // req.body will hold the text fields, if there were any
 });
 
 app.post('/api/s3DirectUpload', fileUpload(), async function (req, res, next) {
@@ -97,9 +76,41 @@ app.post('/api/s3DirectUpload', fileUpload(), async function (req, res, next) {
     console.log(error);
     next(error);
   }
-  //   return res.send({ imagePath: `/images/${result.Key}` });
-  // req.file is the `avatar` file
-  // req.body will hold the text fields, if there were any
+});
+
+app.post(
+  '/api/expressS3/multi',
+  upload.array('avatars'),
+  async function (req, res, next) {
+    try {
+      const result = await Promise.all(
+        req.files.map((file) => uploadFile(file))
+      );
+      req.files.forEach(async (file) => {
+        await fs.unlink(file.path);
+      });
+      return res.send(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+app.post('/api/s3/multi', fileUpload(), async function (req, res, next) {
+  try {
+    const result = await Promise.all(
+      req.files.avatars.map((file) =>
+        uploadFileBuffer(
+          Buffer.from(file.data, 'binary'),
+          file.name.split('.')[0] + Date.now()
+        )
+      )
+    );
+    return res.send(result);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 });
 
 //catch errors
